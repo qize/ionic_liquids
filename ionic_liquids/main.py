@@ -1,3 +1,4 @@
+import sys
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -8,13 +9,15 @@ from methods import methods
 from visualization import plots
 
 
-FILENAME = 'datasets/inputdata.xlsx'
+FILENAME = 'datasets/ILThermo_Tm.csv'
 MODEL = 'mlp_regressor'
 DIRNAME = 'my_test'
 
+descs = sys.argv[1:] if len(sys.argv) > 1 else None
+
 # Get X matrix and response vector y
 df, y_error = utils.read_data(FILENAME)
-X, y = utils.molecular_descriptors(df)
+X, y = utils.molecular_descriptors(df,descs)
 
 Y = np.empty((y.shape[0],2))
 Y[:,0] = y.ravel()
@@ -49,33 +52,36 @@ predict_train = np.zeros(X_train.shape[0])
 predict_test = np.zeros(X_test.shape[0])
 predict_train, predict_test = plots.error_values(np.copy(X_train),np.copy(X_test),np.copy(y_train),np.copy(y_test))
 
-#Creates a plot for the training data set
-plt.figure(figsize=(10,8))
-plt.subplot(1,2,1)
-plt.scatter(y_train,predict_train,s=0.5,color='blue')
-plt.title('Prediction on training data')
-plt.plot(np.linspace(0,12,1000),np.linspace(0,12,1000),color='black')
-plt.xlim((0,12))
-plt.ylim((0,12))
-plt.xlabel("Experiment($S*m^2/mol$)")
-plt.ylabel("Prediction($S*m^2/mol$)")
+plot = False
 
-#Creates a plot for the testing data set  
-plt.subplot(1,2,2)
-plt.scatter(y_test,predict_test,s=2,color='blue')
-plt.title('Prediction on test data')
-plt.xlim((0,12))
-plt.ylim((0,12))
-plt.xlabel("Experiment($S*m^2/mol$)")
-plt.ylabel("Prediction($S*m^2/mol$)")
-plt.plot(np.linspace(0,12,1000),np.linspace(0,12,1000),color='black')
-plt.show()
+if plot:
+    #Creates a plot for the training data set
+    plt.figure(figsize=(10,8))
+    plt.subplot(1,2,1)
+    plt.scatter(y_train,predict_train,s=0.5,color='blue')
+    plt.title('Prediction on training data')
+    plt.plot(np.linspace(0,12,1000),np.linspace(0,12,1000),color='black')
+    plt.xlim((0,12))
+    plt.ylim((0,12))
+    plt.xlabel("Experiment($S*m^2/mol$)")
+    plt.ylabel("Prediction($S*m^2/mol$)")
 
-#Creates a plot for the experimental and predicted data to the experimental error provided by the ILThermo database
-fig = plt.figure(figsize=(10,8))
-ax = fig.add_subplot(111)
-ax1 = fig.add_subplot(211)
-ax2 = fig.add_subplot(212)
+    #Creates a plot for the testing data set  
+    plt.subplot(1,2,2)
+    plt.scatter(y_test,predict_test,s=2,color='blue')
+    plt.title('Prediction on test data')
+    plt.xlim((0,12))
+    plt.ylim((0,12))
+    plt.xlabel("Experiment($S*m^2/mol$)")
+    plt.ylabel("Prediction($S*m^2/mol$)")
+    plt.plot(np.linspace(0,12,1000),np.linspace(0,12,1000),color='black')
+    plt.show()
+
+    #Creates a plot for the experimental and predicted data to the experimental error provided by the ILThermo database
+    fig = plt.figure(figsize=(10,8))
+    ax = fig.add_subplot(111)
+    ax1 = fig.add_subplot(211)
+    ax2 = fig.add_subplot(212)
 
 #Set up the training data set plot
 result = pd.DataFrame(columns=['Experiment','Prediction','error'])
@@ -84,6 +90,9 @@ result.Prediction = predict_train
 result.error = e_train
 result = result.sort_values(['Experiment','Prediction'],ascending=[1,1])
 
+print(result)
+import sys
+sys.exit()
 #Creates a subplot for the training data set
 size=0.2
 ax1.set_xlim((0,2300))
